@@ -1,4 +1,4 @@
-# videoTracker
+# complianceCorrector
  
 This script demonstrates how to automatically correct uniaxial tension test data for compliance.
 
