@@ -76,9 +76,9 @@ density.wtAvg = sum(volumeFraction .* densityList) / sum(volumeFraction);
 % Display the results
 disp('...');
 fprintf('Estimated theoretical elastic moduli:\n');
-fprintf('Voigt Modulus   = %.2f GPa\n', E.voigt);
-fprintf('Reuss Modulus   = %.2f GPa\n', E.reuss);
-fprintf('Average Modulus = %.2f GPa\n', E.average);
+fprintf('Voigt modulus   = %.2f GPa\n', E.voigt);
+fprintf('Reuss modulus   = %.2f GPa\n', E.reuss);
+fprintf('Average modulus = %.2f GPa\n', E.average);
 disp('----');
 fprintf('Density (invRM) = %.4f g/cm3\n', density.invRM);
 fprintf('Density (wtAvg) = %.4f g/cm3\n', density.wtAvg);

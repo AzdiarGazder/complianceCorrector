@@ -137,8 +137,8 @@ else
     disp('...');
     disp('Extracted sample dimensions:');
     disp(['Width        = ', num2str(width_mm), ' mm']);
-    disp(['Total Length = ', num2str(totalLength_mm), ' mm']);
-    disp(['Gauge Length = ', num2str(gaugeLength_mm), ' mm']);
+    disp(['Total length = ', num2str(totalLength_mm), ' mm']);
+    disp(['Gauge length = ', num2str(gaugeLength_mm), ' mm']);
     disp(['Thickness    = ', num2str(thickness_mm), ' mm']);
     disp('...');
 
