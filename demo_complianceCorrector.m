@@ -10,9 +10,9 @@
 % For developing the original "correctcompliance.m" script, rev. Sep 2021.
 %
 % For details, please refer to the following reference:
-% CB Finfrock, 'Temperature and Strain Rate Dependence of the Martensitic
-% Transformation and Mechanical Properties in Advanced High Strength
-% Steels', Colorado School of Mines, PhD thesis, 2022.
+% CB Finfrock, 'Temperature and strain rate dependence of the martensitic
+% transformation and mechanical properties in advanced high strength
+% steels', Colorado School of Mines, PhD thesis, 2022.
 % https://www.researchgate.net/publication/360627771_Temperature_and_Strain_Rate_Dependence_of_the_Martensitic_Transformation_and_Mechanical_Properties_in_Advanced_High_Strength_Steels
 % https://www.researchgate.net/post/How-to-do-compliance-correction-for-a-given-stress-strain-data
 % https://data.niaid.nih.gov/resources?id=mendeley_4p6w99kxg5
