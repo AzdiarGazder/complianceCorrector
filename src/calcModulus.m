@@ -1,22 +1,20 @@
-function [E,density] = calcModulus(varargin)
+function [E,density] = calcModulus(alloyElements,alloyComposition,varargin)
 
 %% Pre-define options
-alloySymbols = get_option(varargin,'elements','H');
-alloyComposition = get_option(varargin,'composition',1);
 % This script assumes composition is in weight percent or weight fraction
 % unless specified as atomic percent or atomic fraction
 flagAtomic = check_option(varargin,'atomic');
 
 % Replace semicolons with commas if necessary to standardise the delimiters
-alloySymbols = strrep(alloySymbols, ';', ',');
-alloySymbols = strtrim(strsplit(alloySymbols, ','))';
+alloyElements = strrep(alloyElements, ';', ',');
+alloyElements = strtrim(strsplit(alloyElements, ','))';
 
 % Check if composition is a row vector and convert it to a column vector if necessary
 if size(alloyComposition, 2) > size(alloyComposition, 1)
     alloyComposition = alloyComposition';
 end
 
-if size(alloySymbols,1) ~= size(alloyComposition,1)
+if size(alloyElements,1) ~= size(alloyComposition,1)
     error('The sizes of the elements and composition arrays do not match.')
 end
 
@@ -36,15 +34,15 @@ massList = [];
 densityList = [];
 
 % Loop through each alloy symbol to collect the necessary elemental properties
-for i = 1:length(alloySymbols)
-    idx = find(strcmp(data.symbol, alloySymbols{i}));
+for i = 1:length(alloyElements)
+    idx = find(strcmp(data.symbol, alloyElements{i}));
     if ~isempty(idx)
         modulusList = [modulusList; data.modulus(idx)];
         atomicNumberList = [atomicNumberList; data.atomicNumber(idx)];
         massList = [massList; data.mass(idx)];
         densityList = [densityList; data.density(idx)];
     else
-        warning('Element %s not found in the dataset.', alloySymbols{i});
+        warning('Element %s not found in the dataset.', alloyElements{i});
     end
 end
 
@@ -80,6 +78,7 @@ fprintf('Voigt modulus   = %.2f GPa\n', E.voigt);
 fprintf('Reuss modulus   = %.2f GPa\n', E.reuss);
 fprintf('Average modulus = %.2f GPa\n', E.average);
 disp('----');
+fprintf('Estimated theoretical density:\n');
 fprintf('Density (invRM) = %.4f g/cm3\n', density.invRM);
 fprintf('Density (wtAvg) = %.4f g/cm3\n', density.wtAvg);
 disp('...');
