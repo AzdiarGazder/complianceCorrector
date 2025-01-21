@@ -1,9 +1,12 @@
-function [xNew,yNew] = calcPLRM(xData, yData, n, varargin)
+function [xNew,yNew,varargout] = calcPLRM(xData, yData, n, varargin)
 
 %% Pre-define options
 fontSize = get_option(varargin,'fontSize',14);
 markerSize = get_option(varargin,'markerSize',10);
 lineWidth = get_option(varargin,'lineWidth',0.5);
+xAxisLabel = get_option(varargin,'xLabel','xData');
+yAxisLabel = get_option(varargin,'yLabel','yData');
+
 
 
 %% Perform piecewise linear regression modelling
@@ -16,8 +19,8 @@ intercept = coeffs(2:2:end);
 % Plot the input data
 figure;
 plot(xData, yData, '.k', 'MarkerSize', markerSize);
-xlabel('Time (s)', 'FontSize', fontSize);
-ylabel('Displacement (mm)', 'FontSize', fontSize);
+xlabel(xAxisLabel, 'FontSize', fontSize);
+ylabel(yAxisLabel, 'FontSize', fontSize);
 grid on;
 hold all;
 
@@ -52,24 +55,31 @@ x1 = xData(1:closestIdx(1)-1);
 y1 = yData(1:closestIdx(1)-1);
 p1 = polyfit(x1,y1,2);
 yF1 = p1(1).*x1.^2 + p1(2).*x1 + p1(3);
-plot(x1,yF1,'-r')
+plot(x1,yF1,'-r');
 
 % Calculate a new best fit line for the second segment
 x2 = xData(closestIdx(1):closestIdx(2)-1);
 y2 = yData(closestIdx(1):closestIdx(2)-1);
 p2 = polyfit(x2,y2,1);
 yF2 = p2(1).*x2 + p2(2);
-plot(x2,yF2,'-g')
+plot(x2,yF2,'-g');
 
 % Calculate a new best fit line for the third segment
 x3 = xData(closestIdx(2):end);
 y3 = yData(closestIdx(2):end);
 p3 = polyfit(x3,y3,1);
 yF3 = p3(1).*x3 + p3(2);
-plot(x3,yF3,'-b')
+plot(x3,yF3,'-b');
 
 % Concantenate the fitted data
 xNew = [x1; x2; x3];
 yNew = [yF1; yF2; yF3];
+
+L1.x = x1; L1.y = y1; L1.P = p1;
+L2.x = x2; L2.y = y2; L2.P = p2;
+L3.x = x3; L3.y = y3; L3.P = p3;
+varargout{1} = L1;
+varargout{2} = L2;
+varargout{3} = L3;
 
 end

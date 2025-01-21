@@ -41,12 +41,12 @@ function complianceCorrector(alloyElements,alloyComposition,varargin)
 %
 %% Options:
 % 'totalLength'     - @double, defines the length of the dog-bone sample.
-% 'gaugeLength'     - @double, defines the parallel gauge length of the
+% 'gageLength'      - @double, defines the parallel gage length of the
 %                     dog-bone sample.
 % 'width'           - @double, defines the width of the dog-bone sample 
-%                     in the parallel gauge length region.
+%                     in the parallel gage length region.
 % 'thickness'       - @double, defines the thickness of the dog-bone sample 
-%                     in the parallel gauge length region.
+%                     in the parallel gage length region.
 %
 %%
 
@@ -57,7 +57,7 @@ function complianceCorrector(alloyElements,alloyComposition,varargin)
 % calculations. However, if these variables are empty, then the values in 
 % the *.txt file are used.
 totalLength_mm = get_option(varargin,'totalLength',[]); % total length (in mm)
-gaugeLength_mm = get_option(varargin,'gaugeLength',[]); % gauge length (in mm)
+gageLength_mm = get_option(varargin,'gageLength',[]); % gage length (in mm)
 width_mm = get_option(varargin,'width',[]); % width (in mm)
 thickness_mm = get_option(varargin,'thickness',[]); % thickness (in mm)
 %% 
@@ -86,7 +86,7 @@ else
     pfName = [pathName fileName];
     disp(pfName);
 
-    %% Read the width, thickness, gauge, and total lengths
+    %% Read the width, thickness, gage, and total lengths
     % Read the sample dimension data from the tab delimited text file
     opts1 = detectImportOptions(pfName, 'Delimiter', ':');
     % Extract only the necessary rows by reading between lines 8 to 11
@@ -104,8 +104,8 @@ else
     if isempty(totalLength_mm)
         totalLength_mm = dataTable1{2, 2}; % total length (in mm)
     end
-    if isempty(gaugeLength_mm)
-        gaugeLength_mm = dataTable1{3, 2}; % gauge length (in mm)
+    if isempty(gageLength_mm)
+        gageLength_mm = dataTable1{3, 2}; % gage length (in mm)
     end
     if isempty(thickness_mm)
         thickness_mm = dataTable1{4, 2}; % thickness (in mm)
@@ -139,7 +139,7 @@ else
     disp('Extracted sample dimensions:');
     disp(['Width        = ', num2str(width_mm), ' mm']);
     disp(['Total length = ', num2str(totalLength_mm), ' mm']);
-    disp(['Gauge length = ', num2str(gaugeLength_mm), ' mm']);
+    disp(['Gage length  = ', num2str(gageLength_mm), ' mm']);
     disp(['Thickness    = ', num2str(thickness_mm), ' mm']);
     disp('...');
 
@@ -185,15 +185,16 @@ f_kN = f; % force
 %% Perform least squares-based piecewise linear regression modelling on the
 % time-displacement data to reduce noise in the displacement data
 disp('...');
-disp('Performing PLRM on time-displacement data...');
+disp('Performing PLRM on stage displacement vs. time data...');
 tic
-[xNew,yNew] = calcPLRM(t,d_mm,3);
-disp('Finished PLRM on time-displacement data...');
+[~,d_mm] = calcPLRM(t,d_mm,3,...
+    'xLabel','Time (s)',...
+    'yLabel','Displacement (mm)');
+disp('Finished PLRM on stage displacement vs. time data...');
 toc
 disp('...')
 pause;
 close all;
-d_mm = yNew;
 %%
 
 
@@ -271,7 +272,7 @@ d_mm_corrected = [d_mm_elastic; d_mm_plastic];
 % for compliance
 % 1/k_effective = 1/k_sample + 1/k_loadFrame % (in  kN/mm)
 k_effective(:,2) = [];
-k_sample = (elasticModulus_GPa * csArea_mm2) / gaugeLength_mm;
+k_sample = (elasticModulus_GPa * csArea_mm2) / gageLength_mm;
 k_loadFrame = 1 / ((1/k_effective) - (1/k_sample));
 
 % Display the calculated compliance
@@ -309,7 +310,7 @@ hold off;
 
 
 %% Plot the corrected engineering stress-strain data
-engStrain = d_mm_corrected./gaugeLength_mm;
+engStrain = d_mm_corrected./gageLength_mm;
 engStress = (f_kN_corrected.*10^3)./csArea_mm2; % (in MPa)
 figure;
 plot(engStrain, engStress, '.-r');
@@ -320,7 +321,7 @@ legend('boxoff');
 hold off;
 
 
-%% Define the paths to save data and video
+%% Define the paths to save data
 outputSubfolder = fullfile(Ini.outputPath,fileName(1:end-4));
 if ~exist(outputSubfolder, 'dir')
     mkdir(outputSubfolder);
@@ -336,7 +337,7 @@ fileHeader1 = {'Alloy elements = ',  alloyElements,...
     'Alloy composition = ',  strrep(num2str(alloyComposition), '  ', ','),...
     'Theoretical elastic modulus (GPa) = ',  elasticModulus_GPa,...
     '----------',...
-    'Length (mm) = ', num2str(gaugeLength_mm),...
+    'Length (mm) = ', num2str(gageLength_mm),...
     'Width (mm) = ', num2str(width_mm),...
     'Thickness (mm) = ', num2str(thickness_mm),...
     '----------'};
@@ -345,7 +346,7 @@ fileHeader2 = {'Time (s)',...
     'Displacement (mm)',...
     'Force (N)',...
     'Eng. strain',...
-    'Eng. Stress (MPa)'};
+    'Eng. stress (MPa)'};
 
 fileData = [t_s,...
     d_mm_corrected,...
