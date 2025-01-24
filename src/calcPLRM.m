@@ -27,12 +27,11 @@ hold all;
 
 % Find the closest crossover points
 xc = crossOverPts(1:2:end);
-for ii = 1:length(xc)
-    deltax = abs(xData - xc(ii));
-    [~, closestIdx(ii)] = min(deltax);
-    xClosest(ii) = xData(closestIdx(ii));
-    yClosest(ii) = yData(closestIdx(ii));
-end
+deltax = abs(xData - xc(:)');  
+[~, closestIdx] = min(deltax, [], 1);
+xClosest = xData(closestIdx);
+yClosest = yData(closestIdx);
+
 % Plot a green circle around the closest crossover points
 plot(xClosest, yClosest, 'ko', 'LineWidth', lineWidth, 'MarkerSize', markerSize);
 
@@ -62,6 +61,8 @@ x2 = xData(closestIdx(1):closestIdx(2)-1);
 y2 = yData(closestIdx(1):closestIdx(2)-1);
 p2 = polyfit(x2,y2,1);
 yF2 = p2(1).*x2 + p2(2);
+yF2 = yF2 - yF2(1);
+yF2 = yF1(end) + yF2;
 plot(x2,yF2,'-g');
 
 % Calculate a new best fit line for the third segment
@@ -69,15 +70,17 @@ x3 = xData(closestIdx(2):end);
 y3 = yData(closestIdx(2):end);
 p3 = polyfit(x3,y3,1);
 yF3 = p3(1).*x3 + p3(2);
+yF3 = yF3 - yF3(1);
+yF3 = yF2(end) + yF3;
 plot(x3,yF3,'-b');
 
 % Concantenate the fitted data
 xNew = [x1; x2; x3];
 yNew = [yF1; yF2; yF3];
 
-L1.x = x1; L1.y = y1; L1.P = p1;
-L2.x = x2; L2.y = y2; L2.P = p2;
-L3.x = x3; L3.y = y3; L3.P = p3;
+L1.x = x1; L1.y = yF1; L1.P = p1;
+L2.x = x2; L2.y = yF2; L2.P = p2;
+L3.x = x3; L3.y = yF3; L3.P = p3;
 varargout{1} = L1;
 varargout{2} = L2;
 varargout{3} = L3;
