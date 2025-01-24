@@ -291,8 +291,9 @@ startForce = f_kN_corrected(1,1);
 startDisplacement = startForce / k_sample;
 d_mm_corrected = d_mm_corrected + startDisplacement;
 
-d_mm_corrected(1,1) = 0;
-f_kN_corrected(1,1) = 0;
+d_mm_corrected = [0; d_mm_corrected];
+f_kN_corrected = [0; f_kN_corrected];
+t_s = [t_s(1)-max(diff(t_s)); t_s];
 t_s = t_s - t_s(1);
 %%
 
