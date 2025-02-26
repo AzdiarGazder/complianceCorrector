@@ -23,8 +23,8 @@ set(0,'DefaultFigureWindowStyle','normal');
 % Use the sample dimensions in the *.txt file
 % Here alloy composition is assumed to be in weight percent or weight
 % fraction
-% complianceCorrector('Zr, Ti, Nb',[35, 40, 25]);
-complianceCorrector('Fe, Mn, Si, Cr, V, Nb',[95.77, 2, 1.5, 0.5, 0.2, 0.03]);
+complianceCorrector('Zr, Ti, Nb',[35, 40, 25]);
+% complianceCorrector('Fe, Mn, Si, Cr, V, Nb',[95.77, 2, 1.5, 0.5, 0.2, 0.03]);
 
 % % Specify a user-defined set of sample dimensions
 % % when a sample dimension is not specified, the value in the *.txt file 
