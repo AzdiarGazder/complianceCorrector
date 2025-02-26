@@ -1,6 +1,6 @@
 function complianceCorrector(alloyElements,alloyComposition,varargin)
 %% Function description:
-% This script automatically corrects uniaxial tension/compression
+% This function automatically corrects uniaxial tension/compression
 % test data for compliance.
 %
 %% Author:
@@ -56,6 +56,13 @@ function complianceCorrector(alloyElements,alloyComposition,varargin)
 % If these values are specified, they are subsequently used for the 
 % calculations. However, if these variables are empty, then the values in 
 % the *.txt file are used.
+% numSegments = 3; % number of segments for PLRM
+% totalLength_mm = []; % total length (in mm)
+% gageLength_mm = []; % gage length (in mm)
+% width_mm = []; % width (in mm)
+% thickness_mm = []; % thickness (in mm)
+
+numSegments = get_option(varargin,'segments',3); % number of segments for PLRM
 totalLength_mm = get_option(varargin,'totalLength',[]); % total length (in mm)
 gageLength_mm = get_option(varargin,'gageLength',[]); % gage length (in mm)
 width_mm = get_option(varargin,'width',[]); % width (in mm)
@@ -151,19 +158,24 @@ end
 
 
 %% Calculate the theoretical elastic modulus of the alloy
+% alloyElements = 'Zr, Ti, Nb'; alloyComposition = [35, 40, 25];
+% [E,~] = calcModulus(alloyElements,alloyComposition);
+
 [E,~] = calcModulus(alloyElements,alloyComposition,varargin{:});
 elasticModulus_GPa = E.average; % in GPa
 %%
 
 
 %% Define the region-of-interest from test start to just at failure
-uiwait(helpdlg({'LEFT-click, drag & release = Select a ROI from test start to just at failure';...
+uiwait(helpdlg({'LEFT-click, drag & release = Select a red ROI from test start to just at failure';...
     'ENTER = when selection completed'}));
 
 figure;
 plot(t,d,'.k');
 xlabel('Time (s)');
 ylabel('Displacement (mm)');
+
+% Create an interactive rectangle
 roi1 = drawrectangle('color','r','lineWidth',0.5);
 % Allow the user to resize and reposition the roi rectangle by forcing
 % the pressing of any key to continue
@@ -187,7 +199,7 @@ f_kN = f; % force
 disp('...');
 disp('Performing PLRM on stage displacement vs. time data...');
 tic
-[~,d_mm] = calcPLRM(t,d_mm,3,...
+[~,d_mm] = calcPLRM(t_s, d_mm, numSegments,...
     'xLabel','Time (s)',...
     'yLabel','Displacement (mm)');
 disp('Finished PLRM on stage displacement vs. time data...');
@@ -200,13 +212,15 @@ close all;
 
 %% Define the region-of-interest from actual test start to just before
 % failure. This step is needed to remove any slack at test start.
-uiwait(helpdlg({'LEFT-click, drag & release = Select a ROI without the slack at test start to failure';...
+uiwait(helpdlg({'LEFT-click, drag & release = Select a green ROI without the slack at test start to failure';...
     'ENTER = when selection completed'}));
 
 figure;
 plot(d_mm,f_kN,'.k');
 xlabel('Displacement (mm)');
 ylabel('Force (kN)');
+
+% Create an interactive rectangle
 roi2 = drawrectangle('color','g','lineWidth',0.5);
 % Allow the user to resize and reposition the roi rectangle by forcing
 % the pressing of any key to continue
@@ -222,14 +236,23 @@ f_kN = f_kN(tf2 == 1);
 
 
 %% Define the region-of-interest for the elastic region
-uiwait(helpdlg({'LEFT-click, drag & release = Select a ROI defining the elastic region';...
+uiwait(helpdlg({'LEFT-click, drag & release = Select a blue ROI defining the elastic region';...
+    'Use the red line as a guide';...
     'ENTER = when selection completed'}));
 
 figure;
 plot(d_mm, f_kN,'.k');
 xlabel('Displacement (mm)');
 ylabel('Force (kN)');
-roi3 = drawrectangle('color','b','lineWidth',0.5);
+hold all;
+
+% Create an interactive straight line
+hLine = drawline('Position', [min(d_mm), min(f_kN); max(d_mm), max(f_kN)], 'color', 'r', 'lineWidth', 0.5); % Initial line position
+% % Add a callback to track the line's movement
+% addlistener(hLine, 'MovingROI', @(src, evt) fprintf('Line moved to: [x1=%f, y1=%f; x2=%f, y2=%f]\n', evt.CurrentPosition(1,1), evt.CurrentPosition(1,2), evt.CurrentPosition(2,1), evt.CurrentPosition(2,2)));
+
+% Create an interactive rectangle
+roi3 = drawrectangle('Position', [min(d_mm), min(f_kN), max(d_mm)/2, max(f_kN)/2],'color','b','lineWidth',0.5);
 % Allow the user to resize and reposition the roi rectangle by forcing
 % the pressing of any key to continue
 pause;
@@ -291,10 +314,28 @@ startForce = f_kN_corrected(1,1);
 startDisplacement = startForce / k_sample;
 d_mm_corrected = d_mm_corrected + startDisplacement;
 
-d_mm_corrected = [0; d_mm_corrected];
-f_kN_corrected = [0; f_kN_corrected];
-t_s = [t_s(1)-max(diff(t_s)); t_s];
-t_s = t_s - t_s(1);
+% d_mm_corrected = [0; d_mm_corrected];
+% f_kN_corrected = [0; f_kN_corrected];
+% t_s = [t_s(1)-max(diff(t_s)); t_s];
+% t_s = t_s - t_s(1);
+
+eqN_origin2Start = polyfit([0,d_mm_corrected(1)],[0,f_kN_corrected(1)],1);
+d_mm_origin2Start = linspace(0,d_mm_corrected(1),50)';
+f_kN_origin2Start = polyval(eqN_origin2Start,d_mm_origin2Start);
+
+d_mm_corrected = [d_mm_origin2Start; d_mm_corrected];
+f_kN_corrected = [f_kN_origin2Start; f_kN_corrected];
+t_s = (0: size(d_mm_corrected,1)-1) * max(diff(t_s));
+
+if size(d_mm_corrected,2) > 1
+    d_mm_corrected = d_mm_corrected';
+end
+if size(f_kN_corrected,2) > 1
+    f_kN_corrected = f_kN_corrected';
+end
+if size(t_s,2) > 1
+    t_s = t_s';
+end
 %%
 
 
@@ -307,6 +348,8 @@ xlabel('Displacement (mm)');
 ylabel('Force (kN)');
 legend('Uncorrected', 'Corrected', 'Location','southeast');
 legend('boxoff');
+xlim([0 max(d_mm)+0.1]);
+ylim([0 max(f_kN_corrected)+0.05]);
 hold off;
 
 
@@ -319,6 +362,8 @@ xlabel('Eng. strain');
 ylabel('Eng. stress (MPa)');
 legend('Corrected', 'Location','southeast');
 legend('boxoff');
+xlim([0 max(engStrain)+0.005]);
+ylim([0 ceil(max(engStress)/100)*100]);
 hold off;
 
 
@@ -362,4 +407,6 @@ fprintf(fid,'%.8f\t%.8f\t%.8f\t%.8f\t%.8f\t\n',fileData);
 fclose(fid);
 toc
 disp('...');
+
+% end
 %%

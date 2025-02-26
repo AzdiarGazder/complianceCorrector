@@ -1,4 +1,5 @@
 *.asv
 
-test/**
-SLMtools/**
+/.test/**
+/.private/**
+/SLMtools/**
