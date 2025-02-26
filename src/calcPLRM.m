@@ -20,9 +20,7 @@ yAxisLabel = get_option(varargin, 'yLabel', 'yData');
 % end
 
 %% Perform piecewise linear regression modelling
-% [~, crossOverPts, R2] = piecewiselm(xData, yData, n);
-% slopes = coeffs(:,1); intercepts = coeffs(:,2); GOF = R2;
-[coeffs, crossOverPts, ~] = piecewiselm(xData, yData, n);
+[coeffs, ~, closestIdx, ~] = PLRM(xData, yData, n);
 
 % Plot the input data
 figure;
@@ -32,14 +30,9 @@ ylabel(yAxisLabel, 'FontSize', fontSize);
 grid on;
 hold all;
 
-% Find the closest crossover points
-xc = crossOverPts(:,1);
-deltax = abs(xData - xc(:)');
-[~, closestIdx] = min(deltax, [], 1);
+% Plot a black circle around the closest crossover points
 xClosest = xData(closestIdx);
 yClosest = yData(closestIdx);
-
-% Plot a green circle around the closest crossover points
 plot(xClosest, yClosest, 'ko', 'LineWidth', lineWidth, 'MarkerSize', markerSize);
 
 % Initialise variables to store fitted data

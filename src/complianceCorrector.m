@@ -176,7 +176,7 @@ xlabel('Time (s)');
 ylabel('Displacement (mm)');
 
 % Create an interactive rectangle
-roi1 = drawrectangle('color','r','lineWidth',0.5);
+roi1 = drawrectangle('Position', [min(t), min(d), max(t)/2, max(d)/2],'color','r','lineWidth',0.5);
 % Allow the user to resize and reposition the roi rectangle by forcing
 % the pressing of any key to continue
 pause;
@@ -221,7 +221,7 @@ xlabel('Displacement (mm)');
 ylabel('Force (kN)');
 
 % Create an interactive rectangle
-roi2 = drawrectangle('color','g','lineWidth',0.5);
+roi2 = drawrectangle('Position', [min(d_mm), min(f_kN), max(d_mm)/2, max(f_kN)/2],'color','g','lineWidth',0.5);
 % Allow the user to resize and reposition the roi rectangle by forcing
 % the pressing of any key to continue
 pause;
