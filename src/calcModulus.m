@@ -3,15 +3,15 @@ function [E,density] = calcModulus(alloyElements,alloyComposition,varargin)
 %% Pre-define options
 % This script assumes composition is in weight percent or weight fraction
 % unless specified as atomic percent or atomic fraction
-flagAtomic = check_option(varargin,'atomic');
+flagAtomic = check_option(varargin,'atomic'); 
 
 % Replace semicolons with commas if necessary to standardise the delimiters
-alloyElements = strrep(alloyElements, ';', ',');
-alloyElements = strtrim(strsplit(alloyElements, ','))';
+alloyElements = strrep(alloyElements, '; ', ','); 
+alloyElements = strtrim(strsplit(alloyElements, ','))'; 
 
 % Check if composition is a row vector and convert it to a column vector if necessary
 if size(alloyComposition, 2) > size(alloyComposition, 1)
-    alloyComposition = alloyComposition';
+    alloyComposition = alloyComposition'; 
 end
 
 if size(alloyElements,1) ~= size(alloyComposition,1)
@@ -24,64 +24,64 @@ end
 
 
 % Get the reference elemental data
-data = referenceElementalData;
+data = referenceElementalData; 
 
 
 % Initialise arrays to store the elemental properties
-modulusList = [];
-atomicNumberList = [];
-massList = [];
-densityList = [];
+modulusList = []; 
+atomicNumberList = []; 
+massList = []; 
+densityList = []; 
 
 % Loop through each alloy symbol to collect the necessary elemental properties
 for i = 1:length(alloyElements)
-    idx = find(strcmp(data.symbol, alloyElements{i}));
+    idx = find(strcmp(data.symbol, alloyElements{i})); 
     if ~isempty(idx)
-        modulusList = [modulusList; data.modulus(idx)];
-        atomicNumberList = [atomicNumberList; data.atomicNumber(idx)];
-        massList = [massList; data.mass(idx)];
-        densityList = [densityList; data.density(idx)];
+        modulusList = [modulusList;  data.modulus(idx)]; 
+        atomicNumberList = [atomicNumberList;  data.atomicNumber(idx)]; 
+        massList = [massList;  data.mass(idx)]; 
+        densityList = [densityList;  data.density(idx)]; 
     else
-        warning('Element %s not found in the dataset.', alloyElements{i});
+        warning('Element %s not found in the dataset.', alloyElements{i}); 
     end
 end
 
 if flagAtomic
     % Convert from atomic percent (at.%) to weight percent (wt.%)
-    atomicFraction = alloyComposition / sum(alloyComposition); % convert to atomic fraction by normalising
+    atomicFraction = alloyComposition / sum(alloyComposition);  % convert to atomic fraction by normalising
     weightFraction = (atomicFraction .* massList .* densityList) / ...
-        sum(atomicFraction .* massList .* densityList);
+        sum(atomicFraction .* massList .* densityList); 
 else
     % Convert from weight percent (wt.%) to weight fraction by normalising
-    weightFraction = alloyComposition / sum(alloyComposition);
+    weightFraction = alloyComposition / sum(alloyComposition); 
 end
 
 % Convert weight fractions to volume fractions
-volumeFraction = (weightFraction ./ (densityList .* massList)) ./ sum(weightFraction ./ (densityList .* massList));
+volumeFraction = (weightFraction ./ (densityList .* massList)) ./ sum(weightFraction ./ (densityList .* massList)); 
 
 % Calculate the Voigt (Rule of Mixtures, Reinforced),
 % Reuss (Series) and  Voigt-Reuss-Hill (VRH) Average elastic moduli
-E.voigt = sum(volumeFraction .* modulusList);
-E.reuss = 1 / sum(volumeFraction ./ modulusList);
-E.average = (E.voigt + E.reuss) / 2;
+E.voigt = sum(volumeFraction .* modulusList); 
+E.reuss = 1 / sum(volumeFraction ./ modulusList); 
+E.average = (E.voigt + E.reuss) / 2; 
 
 % Calculate the alloy density using the inverse rule of mixtures
-density.invRM = 1 / sum(weightFraction ./ densityList);
+density.invRM = 1 / sum(weightFraction ./ densityList); 
 
 % Calculate the alloy density using the weighted average
-density.wtAvg = sum(volumeFraction .* densityList) / sum(volumeFraction);
+density.wtAvg = sum(volumeFraction .* densityList) / sum(volumeFraction); 
 
 % Display the results
-disp('...');
-fprintf('Estimated theoretical elastic moduli:\n');
-fprintf('Voigt modulus   = %.2f GPa\n', E.voigt);
-fprintf('Reuss modulus   = %.2f GPa\n', E.reuss);
-fprintf('Average modulus = %.2f GPa\n', E.average);
-disp('----');
-fprintf('Estimated theoretical density:\n');
-fprintf('Density (invRM) = %.4f g/cm3\n', density.invRM);
-fprintf('Density (wtAvg) = %.4f g/cm3\n', density.wtAvg);
-disp('...');
+disp('...'); 
+fprintf('Estimated theoretical elastic moduli:\n'); 
+fprintf('Voigt modulus   = %.2f GPa\n', E.voigt); 
+fprintf('Reuss modulus   = %.2f GPa\n', E.reuss); 
+fprintf('Average modulus = %.2f GPa\n', E.average); 
+disp('----'); 
+fprintf('Estimated theoretical density:\n'); 
+fprintf('Density (invRM) = %.4f g/cm3\n', density.invRM); 
+fprintf('Density (wtAvg) = %.4f g/cm3\n', density.wtAvg); 
+disp('...'); 
 end
 
 
@@ -89,141 +89,76 @@ end
 
 function elemental = referenceElementalData
 elemental.symbol = {...
-    'Al'; 'Sb';
-    'Ba'; 'Be'; 'Bi'; 'B';
-    'Cd'; 'Ca'; 'C'; 'C_diamond'; 'Ce'; 'Cr'; 'Co'; 'Cu';
-    'Dy';
-    'Er'; 'Eu';
-    'Fr';
-    'Gd'; 'Ga'; 'Ge'; 'Au';
-    'Hf'; 'He'; 'Ho'; 'H';
-    'In'; 'I'; 'Ir';
-    'Fe';
-    'Kr';
-    'La'; 'Pb'; 'Li'; 'Lu';
-    'Mg'; 'Mn'; 'Hg'; 'Mo';
-    'Nd'; 'Ne'; 'Ni'; 'Nb'; 'N';
-    'Os';
-    'Pd'; 'P'; 'Pt'; 'Pu'; 'Po'; 'K';
-    'Ra'; 'Rn'; 'Re'; 'Rh'; 'Rb'; 'Ru';
-    'Sm'; 'Sc'; 'Se'; 'Si'; 'Ag'; 'Na'; 'Sr'; 'S';
-    'Ta'; 'Te'; 'Tb'; 'Tl'; 'Th'; 'Tm'; 'Sn'; 'Ti';
-    'W';
-    'U';
-    'V';
-    'Xe';
-    'Yb'; 'Y';
-    'Zn'; 'Zr'};
+    'H'; 'He'; 'Li'; 'Be'; 'B'; 'C'; 'N'; 'O'; 'F'; 'Ne'; 
+    'Na'; 'Mg'; 'Al'; 'Si'; 'P'; 'S'; 'Cl'; 'Ar'; 'K'; 'Ca'; 
+    'Sc'; 'Ti'; 'V'; 'Cr'; 'Mn'; 'Fe'; 'Co'; 'Ni'; 'Cu'; 'Zn'; 
+    'Ga'; 'Ge'; 'As'; 'Se'; 'Br'; 'Kr'; 'Rb'; 'Sr'; 'Y'; 'Zr'; 
+    'Nb'; 'Mo'; 'Tc'; 'Ru'; 'Rh'; 'Pd'; ' Ag'; 'Cd'; 'In'; 'Sn'; 
+    'Sb'; 'Te'; 'I'; 'Xe'; 'Cs'; 'Ba'; 'La'; 'Ce'; 'Pr'; 'Nd'; 
+    'Pm'; 'Sm'; 'Eu'; 'Gd'; 'Tb'; 'Dy'; 'Ho'; 'Er'; 'Tm'; 'Yb'; 
+    'Lu'; 'Hf'; 'Ta'; 'W'; 'Re'; 'Os'; 'Ir'; 'Pt'; 'Au'; 'Hg'; 
+    'Tl'; 'Pb'; 'Bi'; 'Po'; 'At'; 'Rn'; 'Fr'; 'Ra'; 'Ac'; 'Th'; 
+    'Pa'; 'U'; 'Np'; 'Pu'; 'Am'; ...
+    }; 
+
 
 % Note: The elastic modulus of C is highly anisotropic and varies from 18
 % to 40 GPa. Consequently, an average value of 29 GPa is used here.
 elemental.modulus = [... % in GPa
-    69; 55;
-    13; 287; 32; 380;
-    50; 20; 29; 1050; 33; 279; 209; 110;
-    69;
-    69; 18;
-    nan;
-    78; 9.8; 103; 78;
-    78; nan; 64; nan;
-    11; 11; 528;
-    211;
-    nan;
-    36; 16; 5.5; 70;
-    45; 198; nan; 329;
-    41; nan; 200; 105; nan;
-    550;
-    121; 11; 168; 96; nan; 3.5;
-    nan; nan; 463; 380; 2.4; 447;
-    49; 74; 10; 130; 83; 10; 15; 7;
-    186; 43; 55; 8; 79; 74; 50; 116;
-    411;
-    208;
-    128;
-    nan;
-    24; 63;
-    108; 68];
+    nan; nan; 4.9; 287; nan; 29; nan; nan; nan; nan; 
+    10; 45; 70; 47; nan; nan; nan; nan; nan; 20; 
+    74; 116; 128; 279; 198; 211; 209; 200; 130; 108; 
+    nan; nan; 8; 10; nan; nan; 2.4; nan; 64; 67; 
+    105; 329; nan; 447; 275; 121; 85; 50; 11; 50; 
+    55; 43; nan; nan; 1.7; 13; 37; 34; 37; 41; 
+    46; 50; 18; 55; 56; 61; 64; 70; 74; 24; 
+    67; 78; 186; 411; 463; nan; 528; 168; 78; nan; 
+    8; 16; 32; nan; nan; nan; nan; nan; nan; 79; 
+    nan; 208; nan; 96; nan; ...
+    ]; 
 
-elemental.atomicNumber = [...
-    13; 51;
-    56; 4; 83; 5;
-    48; 20; 6; 6; 58; 24; 27; 29;
-    66;
-    68; 63;
-    87;
-    64; 31; 32; 79;
-    72; 2; 67; 1;
-    49; 53; 77;
-    26;
-    36;
-    57; 82; 3; 71;
-    12; 25; 80; 42;
-    60; 10; 28; 41; 7;
-    76;
-    46; 15; 78; 94; 84; 19;
-    88; 86; 75; 45; 37; 44;
-    62; 21; 34; 14; 47; 11; 38; 16;
-    73; 52; 65; 81; 90; 69; 50; 22;
-    74;
-    92;
-    23;
-    54;
-    70; 39;
-    30; 40];
+
+elemental.atomicNumber = [... % Z
+    1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 
+    11; 12; 13; 14; 15; 16; 17; 18; 19; 20; 
+    21; 22; 23; 24; 25; 26; 27; 28; 29; 30; 
+    31; 32; 33; 34; 35; 36; 37; 38; 39; 40; 
+    41; 42; 43; 44; 45; 46; 47; 48; 49; 50; 
+    51; 52; 53; 54; 55; 56; 57; 58; 59; 60; 
+    61; 62; 63; 64; 65; 66; 67; 68; 69; 70; 
+    71; 72; 73; 74; 75; 76; 77; 78; 79; 80; 
+    81; 82; 83; 84; 85; 86; 87; 88; 89; 90; 
+    91; 92; 93; 94; 95; ...
+    ]; 
+
 
 elemental.mass = [... % in g/mol
-    26.98; 121.76;
-    137.33; 9.0122; 208.98; 10.81;
-    112.41; 40.08; 12.01; 12.01; 140.12; 52; 58.93; 63.55;
-    162.5;
-    167.26; 151.98;
-    223;
-    157.25; 69.72; 72.63; 196.97;
-    178.49; 4.0026; 164.93; 1.008;
-    114.82; 126.9; 192.22;
-    55.85;
-    83.8;
-    138.91; 207.2; 6.94; 175;
-    24.31; 54.94; 200.59; 95.95;
-    144.24; 20.18; 58.69; 92.91; 14.01;
-    190.23;
-    106.42; 30.97; 195.08; 244.06; 209.98; 39.1;
-    226.03; 222; 186.21; 102.91; 85.47; 101.07;
-    150.36; 44.96; 78.96; 28.09; 107.87; 22.99; 87.62; 32.07;
-    180.95; 127.6; 158.93; 204.38; 232.04; 168.93; 118.71; 47.87;
-    183.84;
-    238.03;
-    50.94;
-    131.29;
-    173.04; 88.91;
-    65.38; 91.22];
+    1.008;  4.002602;  6.94;  9.0121831;  10.81;  12.011;  14.007;  15.999;  18.998403163;  20.1797; 
+    22.98976928;  24.305;  26.9815385;  28.085;  30.973761998;  32.06;  35.45;  39.948;  39.0983;  40.078; 
+    44.955908;  47.867;  50.9415;  51.9961;  54.938044;  55.845;  58.933194;  58.6934;  63.546;  65.38; 
+    69.723;  72.63;  74.921595;  78.971;  79.904;  83.798;  85.4678;  87.62;  88.90584;  91.224; 
+    92.90637;  95.95;  97;  101.07;  102.9055;  106.42;  107.8682;  112.414;  114.818;  118.71; 
+    121.76;  127.6;  126.90447;  131.293;  132.90545196;  137.327;  138.90547;  140.116;  140.90766;  144.242; 
+    145;  150.36;  151.964;  157.25;  158.92535;  162.5;  164.93033;  167.259;  168.93422;  173.045; 
+    174.9668;  178.49;  180.94788;  183.84;  186.207;  190.23;  192.217;  195.084;  196.966569;  200.592; 
+    204.38;  207.2;  208.9804;  209;  210;  222;  223;  226;  227;  232.0377; 
+    231.03588;  238.02891;  237;  244;  243; ...
+    ]; 
+
 
 elemental.density = [... % in g/cm3
-    2.7; 6.68;
-    3.62; 1.848; 9.78; 2.34;
-    8.65; 1.54; 2.267; 3.51; 6.77; 7.19; 8.9; 8.96;
-    8.55;
-    9.06; 5.24;
-    nan;
-    7.9; 5.91; 5.32; 19.32;
-    13.31; 0.0001786; 8.8; 0.00008988;
-    7.31; 4.93; 22.56;
-    7.87;
-    0.00375;
-    6.15; 11.34; 0.534; 9.84;
-    1.738; 7.43; 13.534; 10.28;
-    7.01; 0.0008999; 8.9; 8.57; 0.0012506;
-    22.59;
-    12.03; 1.82; 21.45; 19.86; nan; 0.856;
-    5.5; 0.00973; 21.02; 12.41; 1.532; 12.37;
-    7.52; 2.98; 4.81; 2.33; 10.49; 0.968; 2.64; 2.07;
-    16.69; 6.24; 8.23; 11.85; 11.72; 9.32; 7.31; 4.54;
-    19.25;
-    18.95;
-    6.11;
-    0.005887;
-    6.9; 4.47;
-    7.14; 6.52];
+0.0000899; 0.0001785; 0.535; 1.848; 2.46; 2.26; 0.001251; 0.001429; 0.001696; 0.0009; 
+0.968; 1.738; 2.7; 2.33; 1.823; 1.96; 0.003214; 0.001784; 0.856; 1.55; 
+2.985; 4.507; 6.11; 7.19; 7.47; 7.874; 8.9; 8.908; 8.96; 7.14; 
+5.904; 5.323; 5.727; 4.819; 3.12; 0.00375; 1.532; 2.63; 4.472; 6.511; 
+8.57; 10.28; 11.5; 12.37; 12.45; 12.023; 10.49; 8.65; 7.31; 7.31; 
+6.697; 6.24; 4.94; 0.0059; 1.879; 3.51; 6.146; 6.689; 6.64; 7.01; 
+7.264; 7.353; 5.244; 7.901; 8.219; 8.551; 8.795; 9.066; 9.32; 6.57; 
+9.841; 13.31; 16.65; 19.25; 21.02; 22.59; 22.56; 21.45; 19.3; 13.534; 
+11.85; 11.34; 9.78; 9.196; nan; 0.00973; nan; 5; 10.07; 11.724; 
+15.37; 19.05; 20.45; 19.816; 13.67; ...
+];
+
 
 % % Reference list:
 % % [1] Ashby, Shercliff, Cebon, "Materials: Engineering, Science, Processing".
