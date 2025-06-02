@@ -1,6 +1,7 @@
 function [E,density] = calcModulus(alloyElements,alloyComposition,varargin)
 
 %% P
+%% fdnfdfnmef
 % This script assumes composition is in weight percent or weight fraction
 % unless specified as atomic percent or atomic fraction
 flagAtomic = check_option(varargin,'atomic'); 
