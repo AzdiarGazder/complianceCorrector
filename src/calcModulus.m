@@ -43,7 +43,7 @@ densityList = [];
 
 % Loop through each alloy symbol to collect the necessary elemental properties
 for ii = 1:length(alloyElements)
-    idx = find(strcmp(data.symbol, alloyElements{ii})); 
+    idx = find(strcmpi(data.symbol, alloyElements{ii})); 
     if ~isempty(idx)
         modulusList = [modulusList;  data.modulus(idx)]; 
         atomicNumberList = [atomicNumberList;  data.atomicNumber(idx)]; 
@@ -54,7 +54,7 @@ for ii = 1:length(alloyElements)
     end
 end
 
-% Check for nan values in the elemental data
+% Check for and delete nan values from the elemental data
 nanCheck = isnan(modulusList) | isnan(densityList);
 if any(nanCheck)
     disp('...'); 
