@@ -5,9 +5,17 @@ function [E,density] = calcModulus(alloyElements,alloyComposition,varargin)
 % unless specified as atomic percent or atomic fraction
 flagAtomic = check_option(varargin,'atomic'); 
 
-% Replace semicolons with commas if necessary to standardise the delimiters
-alloyElements = strrep(alloyElements, '; ', ','); 
-alloyElements = strtrim(strsplit(alloyElements, ','))'; 
+if isa(alloyElements,'cell')
+    alloyElements = alloyElements';
+
+elseif isa(alloyElements,'char')
+    % Replace semicolons with commas if necessary to standardise the delimiters
+    alloyElements = strrep(alloyElements, '; ', ',');
+    alloyElements = strtrim(strsplit(alloyElements, ','))';
+
+else
+    error('alloyElements must be of class cell or char.');
+end
 
 % Check if composition is a row vector and convert it to a column vector if necessary
 if size(alloyComposition, 2) > size(alloyComposition, 1)
@@ -34,17 +42,34 @@ massList = [];
 densityList = []; 
 
 % Loop through each alloy symbol to collect the necessary elemental properties
-for i = 1:length(alloyElements)
-    idx = find(strcmp(data.symbol, alloyElements{i})); 
+for ii = 1:length(alloyElements)
+    idx = find(strcmp(data.symbol, alloyElements{ii})); 
     if ~isempty(idx)
         modulusList = [modulusList;  data.modulus(idx)]; 
         atomicNumberList = [atomicNumberList;  data.atomicNumber(idx)]; 
         massList = [massList;  data.mass(idx)]; 
         densityList = [densityList;  data.density(idx)]; 
     else
-        warning('Element %s not found in the dataset.', alloyElements{i}); 
+        warning('Element %s not found in the dataset.', alloyElements{ii}); 
     end
 end
+
+% Check for nan values in the elemental data
+nanCheck = isnan(modulusList) | isnan(densityList);
+if any(nanCheck)
+    disp('...'); 
+    disp('Elements excluded from calculation (NaNs):')
+    elements2Exclude = char(alloyElements(nanCheck));
+    disp(elements2Exclude);
+
+    % Remove nan elemental data from all variables
+    alloyComposition = alloyComposition(~nanCheck);
+    modulusList = modulusList(~nanCheck);
+    atomicNumberList = atomicNumberList(~nanCheck);
+    massList = massList(~nanCheck);
+    densityList = densityList(~nanCheck);
+end
+
 
 if flagAtomic
     % Convert from atomic percent (at.%) to weight percent (wt.%)
